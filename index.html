@@ -801,7 +801,7 @@
         // ========== МОДЕЛЬ ДАННЫХ ==========
         let clients = [], currentClientId = null, metricsData = {}, checklists = {};
 
-        // ИСПРАВЛЕНО: Физика → Фитнес, Психо → Психолог
+        // ✅ ИСПРАВЛЕНО: Физика → Фитнес, Психо → Психолог (ВСЕ вхождения)
         const metricsTemplate = {
             strength: { name: "Сила", category: "Фитнес", specialist: "Тренер", entry: 3, mid: 5, final: 6 },
             endurance: { name: "Выносливость", category: "Фитнес", specialist: "Тренер", entry: 2, mid: 4, final: 6 },
@@ -1048,7 +1048,10 @@
             let c = clients.find(c => c.id === currentClientId), m = getMetrics(), gpi = calculateGPI();
             let el = document.createElement('div');
             el.style.padding = '20px'; el.style.fontFamily = 'sans-serif';
-            el.innerHTML = `<h1 style="color:#667eea">FHRM Отчет</h1><h2>${c.name}</h2><p>${new Date().toLocaleDateString()}</p><hr><h3>GPI: ${gpi.finalGPI.toFixed(1)}/7</h3><table border="1" cellpadding="8"><tr><th>Показатель</th><th>Вход</th><th>Выход</th><th>Прирост</th></tr>${Object.values(m).map(v => `<tr><td>${v.name}</td><td>${v.entry}</td><td>${v.final}</td><td>${v.final - v.entry > 0 ? '+' : ''}${v.final - v.entry}</td></tr>`).join('')}</table>`;
+            el.innerHTML = `<h1 style="color:#667eea">FHRM Отчет</h1><h2>${c.name}</h2><p>${new Date().toLocaleDateString()}</p><hr><h3>GPI: ${gpi.finalGPI.toFixed(1)}/7</h3><table border="1" cellpadding="8">`
+                + `<tr><th>Показатель</th><th>Вход</th><th>Выход</th><th>Прирост</th></tr>`
+                + Object.values(m).map(v => `<tr><td>${v.name}</td><td>${v.entry}</td><td>${v.final}</td><td>${v.final - v.entry > 0 ? '+' : ''}${v.final - v.entry}</td></tr>`).join('')
+                + `</table>`;
             document.body.appendChild(el);
             html2pdf().from(el).set({ filename: `FHRM_${c.name}.pdf` }).save();
             document.body.removeChild(el);

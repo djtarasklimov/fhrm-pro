@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,8 +24,20 @@
     }">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Полный CSS код из предыдущей версии */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Отступ для Dynamic Island и безопасной зоны iPhone */
+        :root {
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Темы */
         :root {
             --bg-primary: #f8fafc;
             --bg-secondary: #ffffff;
@@ -39,6 +51,7 @@
             --warning-text: #92400e;
             --success-bg: #d1fae5;
         }
+
         body.dark {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
@@ -50,14 +63,19 @@
             --warning-text: #fde047;
             --success-bg: #064e3b;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg-primary);
             min-height: 100vh;
-            padding: 16px;
+            padding: 0;
             transition: all 0.3s ease;
             color: var(--text-primary);
+            /* Отступ для Dynamic Island */
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
         }
+
         .app-container {
             max-width: 500px;
             margin: 0 auto;
@@ -65,25 +83,43 @@
             border-radius: 32px;
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
         }
+
         .status-bar {
             background: var(--bg-secondary);
             padding: 12px 20px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             border-bottom: 1px solid var(--border);
+            /* Дополнительный отступ для Dynamic Island */
+            padding-top: max(12px, var(--safe-area-top));
         }
+
         .theme-toggle {
             background: var(--bg-primary);
             border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 30px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            min-width: 70px;
         }
+
+        .theme-toggle:active {
+            transform: scale(0.96);
+        }
+
         .header {
+            background: var(--bg-secondary);
             padding: 20px;
             border-bottom: 1px solid var(--border);
         }
+
         .client-selector {
             display: flex;
             justify-content: space-between;
@@ -92,54 +128,102 @@
             gap: 12px;
             margin-bottom: 16px;
         }
+
         .client-name h1 {
             font-size: 20px;
+            font-weight: 700;
             color: var(--text-primary);
         }
+
         .client-name p {
             font-size: 12px;
             color: var(--text-secondary);
+            margin-top: 4px;
         }
+
+        .client-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
         .icon-btn {
             background: var(--bg-primary);
             border: 1px solid var(--border);
             padding: 8px 12px;
             border-radius: 12px;
             cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            color: var(--text-primary);
         }
+
+        .icon-btn:active {
+            transform: scale(0.96);
+        }
+
         .week-badge {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             padding: 8px 16px;
             border-radius: 20px;
             color: white;
             display: inline-block;
+            font-size: 14px;
             margin-bottom: 16px;
         }
+
         .progress-card {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             border-radius: 24px;
             padding: 20px;
             color: white;
         }
+
         .gpi-score {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
-        .gpi-score .value { font-size: 36px; font-weight: 800; }
+
+        .gpi-score .value {
+            font-size: 36px;
+            font-weight: 800;
+        }
+
+        .gpi-score .change {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
         .progress-bar-container {
             background: rgba(255,255,255,0.2);
             border-radius: 12px;
             height: 8px;
+            overflow: hidden;
             margin: 16px 0;
         }
+
         .progress-bar-fill {
             background: #ffd966;
             height: 100%;
             border-radius: 12px;
-            transition: width 0.5s;
+            transition: width 0.5s ease;
         }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            opacity: 0.9;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
         .tabs {
             display: flex;
             background: var(--bg-secondary);
@@ -148,6 +232,7 @@
             border-bottom: 1px solid var(--border);
             overflow-x: auto;
         }
+
         .tab {
             flex: 1;
             padding: 10px;
@@ -158,19 +243,32 @@
             border-radius: 12px;
             cursor: pointer;
             font-size: 12px;
+            white-space: nowrap;
             color: var(--text-secondary);
         }
+
         .tab.active {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
         }
+
         .panel {
             display: none;
             padding: 20px;
+            animation: fadeIn 0.3s ease;
             max-height: 60vh;
             overflow-y: auto;
         }
-        .panel.active { display: block; }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .metric-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -179,21 +277,62 @@
             border: 1px solid var(--border);
             cursor: pointer;
         }
+
+        .metric-card:active {
+            transform: scale(0.99);
+        }
+
         .metric-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 12px;
         }
+
+        .metric-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .metric-category {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
         .metric-scores {
             display: flex;
             justify-content: space-between;
             gap: 12px;
             flex-wrap: wrap;
         }
-        .score-value { font-size: 20px; font-weight: 800; }
+
+        .score-value {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
         .score-entry { color: #ef4444; }
         .score-mid { color: #f59e0b; }
         .score-final { color: #10b981; }
+
+        .progress-indicator {
+            flex: 2;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
         .radar-container {
             background: var(--bg-card);
             border-radius: 16px;
@@ -202,12 +341,18 @@
             text-align: center;
             border: 1px solid var(--border);
         }
-        canvas { max-width: 100%; height: auto; }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
         .specialist-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 12px;
         }
+
         .specialist-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -215,12 +360,36 @@
             text-align: center;
             border: 1px solid var(--border);
         }
+
+        .specialist-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .specialist-name {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .specialist-kpi {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gradient-start);
+        }
+
+        .specialist-stars {
+            font-size: 12px;
+            color: #fbbf24;
+        }
+
         .photo-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
             margin-bottom: 20px;
         }
+
         .photo-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -228,6 +397,12 @@
             text-align: center;
             border: 1px solid var(--border);
         }
+
+        .photo-card h4 {
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
         .photo-placeholder {
             width: 100%;
             height: 150px;
@@ -239,14 +414,33 @@
             font-size: 40px;
             border: 2px dashed var(--border);
             margin-bottom: 8px;
+            color: var(--text-secondary);
         }
-        .form-group { margin-bottom: 16px; }
+
+        .photo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
         .form-label {
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
             color: var(--text-primary);
         }
+
         .form-select, .form-input {
             width: 100%;
             padding: 12px;
@@ -255,12 +449,19 @@
             background: var(--bg-primary);
             color: var(--text-primary);
         }
+
         .slider-container {
             display: flex;
             align-items: center;
             gap: 16px;
         }
-        input[type="range"] { flex: 1; }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+        }
+
         .btn {
             width: 100%;
             padding: 14px;
@@ -270,37 +471,63 @@
             cursor: pointer;
             margin-top: 8px;
         }
+
         .btn-primary {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
         }
+
         .btn-secondary {
             background: var(--bg-primary);
             color: var(--text-primary);
             border: 1px solid var(--border);
         }
-        .client-list { max-height: 300px; overflow-y: auto; }
+
+        .client-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
         .client-item {
             padding: 12px;
             border-bottom: 1px solid var(--border);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
         }
+
+        .client-item:active {
+            background: var(--bg-primary);
+        }
+
         .checklist-item {
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 8px 0;
             border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
         }
+
         .growth-zone-card {
             background: var(--warning-bg);
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 12px;
         }
-        .growth-zone-card .metric-title { color: var(--warning-text); }
+
+        .growth-zone-card .metric-title {
+            color: var(--warning-text);
+        }
+
+        .success-card {
+            background: var(--success-bg);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
         .toast {
             position: fixed;
             bottom: 30px;
@@ -313,10 +540,18 @@
             z-index: 1100;
             animation: fadeInUp 0.3s;
         }
+
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
+
         .modal {
             display: none;
             position: fixed;
@@ -330,7 +565,11 @@
             align-items: center;
             padding: 20px;
         }
-        .modal.active { display: flex; }
+
+        .modal.active {
+            display: flex;
+        }
+
         .modal-content {
             background: var(--bg-secondary);
             border-radius: 24px;
@@ -340,6 +579,26 @@
             max-height: 80vh;
             overflow-y: auto;
         }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: var(--text-primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
         .bottom-nav {
             background: var(--bg-secondary);
             display: flex;
@@ -347,6 +606,7 @@
             gap: 8px;
             border-top: 1px solid var(--border);
         }
+
         .nav-item {
             flex: 1;
             text-align: center;
@@ -357,19 +617,28 @@
             font-size: 11px;
             color: var(--text-secondary);
         }
-        .nav-item.active { color: var(--gradient-start); }
+
+        .nav-item.active {
+            color: var(--gradient-start);
+        }
+
         @media (max-width: 480px) {
-            .photo-grid { grid-template-columns: 1fr; }
-            body { padding: 8px; }
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+            .specialist-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="app-container" id="app">
+    <div class="app-container">
         <div class="status-bar">
             <span>🏥 FHRM Pro</span>
             <button class="theme-toggle" onclick="toggleTheme()">🌙 Тема</button>
         </div>
+
         <div class="header">
             <div class="client-selector">
                 <div class="client-name">
@@ -383,19 +652,26 @@
                 </div>
             </div>
             <div class="week-badge" id="weekBadge"></div>
+
             <div class="progress-card">
                 <div class="gpi-score">
                     <span>Общий индекс (GPI)</span>
-                    <div><span class="value" id="gpiValue">0.0</span><span id="gpiChange"></span></div>
+                    <div>
+                        <span class="value" id="gpiValue">0.0</span>
+                        <span class="change" id="gpiChange"></span>
+                    </div>
                 </div>
-                <div class="progress-bar-container"><div class="progress-bar-fill" id="gpiProgress" style="width:0%"></div></div>
-                <div class="progress-stats" style="display:flex; justify-content:space-between; font-size:12px;">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="gpiProgress" style="width:0%"></div>
+                </div>
+                <div class="progress-stats">
                     <span id="entryGPI">🔴 Вход: 0.0</span>
                     <span id="midGPI">🟡 Середина: 0.0</span>
                     <span id="finalGPI">🟢 Выход: 0.0</span>
                 </div>
             </div>
         </div>
+
         <div class="tabs">
             <button class="tab active" data-panel="overview">📊 Обзор</button>
             <button class="tab" data-panel="metrics">📈 Показатели</button>
@@ -403,30 +679,82 @@
             <button class="tab" data-panel="photos">📸 Фото</button>
             <button class="tab" data-panel="entry">✏️ Ввод</button>
         </div>
+
         <div class="panel active" id="overview">
-            <div class="radar-container"><canvas id="radarChart" width="400" height="400"></canvas></div>
-            <h3>🏆 Топ достижений</h3><div id="topAchievements"></div>
-            <h3>⚠️ Зоны роста</h3><div id="growthZones"></div>
+            <div class="radar-container">
+                <canvas id="radarChart" width="400" height="400"></canvas>
+                <div style="display: flex; justify-content: center; gap: 16px; margin-top: 12px;">
+                    <span><span style="color: #ef4444;">●</span> Вход</span>
+                    <span><span style="color: #10b981;">●</span> Выход</span>
+                </div>
+            </div>
+            <h3 style="margin-bottom: 12px; color: var(--text-primary);">🏆 Топ достижений</h3>
+            <div id="topAchievements"></div>
+            <h3 style="margin: 20px 0 12px; color: var(--text-primary);">⚠️ Зоны роста</h3>
+            <div id="growthZones"></div>
         </div>
-        <div class="panel" id="metrics"><div id="metricsList"></div></div>
-        <div class="panel" id="specialists"><div class="specialist-grid" id="specialistsGrid"></div><div class="metric-card"><h4>📋 Рекомендации</h4><div id="recommendations"></div></div></div>
+
+        <div class="panel" id="metrics">
+            <div id="metricsList"></div>
+        </div>
+
+        <div class="panel" id="specialists">
+            <div class="specialist-grid" id="specialistsGrid"></div>
+            <div class="metric-card" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 12px; color: var(--text-primary);">📋 Рекомендации</h4>
+                <div id="recommendations" style="font-size: 14px; color: var(--text-secondary);"></div>
+            </div>
+        </div>
+
         <div class="panel" id="photos">
             <div class="photo-grid">
-                <div class="photo-card"><h4>📸 До</h4><div id="photoBeforeContainer" class="photo-placeholder">📷</div><input type="file" id="photoBefore" style="display:none"><button class="btn btn-secondary" onclick="document.getElementById('photoBefore').click()">Загрузить</button></div>
-                <div class="photo-card"><h4>📸 После</h4><div id="photoAfterContainer" class="photo-placeholder">📷</div><input type="file" id="photoAfter" style="display:none"><button class="btn btn-secondary" onclick="document.getElementById('photoAfter').click()">Загрузить</button></div>
+                <div class="photo-card">
+                    <h4>📸 Осанка (ДО)</h4>
+                    <div id="photoBeforeContainer" class="photo-placeholder">📷</div>
+                    <input type="file" id="photoBefore" accept="image/*" style="display:none">
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('photoBefore').click()">Загрузить</button>
+                </div>
+                <div class="photo-card">
+                    <h4>📸 Осанка (ПОСЛЕ)</h4>
+                    <div id="photoAfterContainer" class="photo-placeholder">📷</div>
+                    <input type="file" id="photoAfter" accept="image/*" style="display:none">
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('photoAfter').click()">Загрузить</button>
+                </div>
             </div>
-            <div class="metric-card"><h4>📋 Чек-лист</h4><div id="checklistContainer"></div><button class="btn btn-secondary" onclick="addChecklistItem()">+ Добавить</button></div>
+            <div class="metric-card">
+                <h4 style="margin-bottom: 12px; color: var(--text-primary);">📋 Чек-лист</h4>
+                <div id="checklistContainer"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addChecklistItem()" style="margin-top: 12px;">+ Добавить</button>
+            </div>
         </div>
+
         <div class="panel" id="entry">
             <div class="metric-card">
-                <h3>✏️ Ввод данных</h3>
-                <div class="form-group"><label class="form-label">Показатель</label><select id="metricSelect" class="form-select"></select></div>
-                <div class="form-group"><label class="form-label">Тип замера</label><select id="assessmentType" class="form-select"><option value="entry">Вход</option><option value="mid">Середина</option><option value="final">Выход</option></select></div>
-                <div class="form-group"><label class="form-label">Оценка (1-7)</label><div class="slider-container"><input type="range" id="scoreSlider" min="1" max="7" value="4"><span id="scoreValue">4</span></div></div>
+                <h3 style="margin-bottom: 16px; color: var(--text-primary);">✏️ Ввод данных</h3>
+                <div class="form-group">
+                    <label class="form-label">Показатель</label>
+                    <select id="metricSelect" class="form-select"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Тип замера</label>
+                    <select id="assessmentType" class="form-select">
+                        <option value="entry">Вход</option>
+                        <option value="mid">Середина</option>
+                        <option value="final">Выход</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Оценка (1-7)</label>
+                    <div class="slider-container">
+                        <input type="range" id="scoreSlider" min="1" max="7" value="4">
+                        <span id="scoreValue" style="color: var(--text-primary);">4</span>
+                    </div>
+                </div>
                 <button class="btn btn-primary" id="saveDataBtn">💾 Сохранить</button>
                 <button class="btn btn-secondary" id="resetDataBtn">🔄 Сбросить</button>
             </div>
         </div>
+
         <div class="bottom-nav">
             <button class="nav-item active" data-nav="overview">🏠 Главная</button>
             <button class="nav-item" data-nav="metrics">📊 Показатели</button>
@@ -435,117 +763,323 @@
             <button class="nav-item" data-nav="entry">✏️ Ввод</button>
         </div>
     </div>
-    <div id="clientModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Клиенты</h3><button class="close-modal" onclick="closeModal('clientModal')">×</button></div><div id="clientListContainer"></div><button class="btn btn-secondary" onclick="showNewClientModal();closeModal('clientModal')">➕ Новый</button></div></div>
-    <div id="newClientModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Новый клиент</h3><button class="close-modal" onclick="closeModal('newClientModal')">×</button></div><input type="text" id="newClientName" placeholder="Имя" class="form-input" style="margin-bottom:10px"><input type="number" id="newClientDuration" value="12" class="form-input" style="margin-bottom:10px"><button class="btn btn-primary" onclick="createClient()">Создать</button></div></div>
-    <div id="editMetricModal" class="modal"><div class="modal-content"><div class="modal-header"><h3 id="editMetricTitle">Редактировать</h3><button class="close-modal" onclick="closeModal('editMetricModal')">×</button></div><div id="editMetricForm"></div></div></div>
+
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Клиенты</h3>
+                <button class="close-modal" onclick="closeModal('clientModal')">×</button>
+            </div>
+            <div id="clientListContainer"></div>
+            <button class="btn btn-secondary" onclick="showNewClientModal();closeModal('clientModal')" style="margin-top: 12px;">➕ Новый</button>
+        </div>
+    </div>
+
+    <div id="newClientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Новый клиент</h3>
+                <button class="close-modal" onclick="closeModal('newClientModal')">×</button>
+            </div>
+            <input type="text" id="newClientName" placeholder="Имя" class="form-input" style="margin-bottom:10px">
+            <input type="number" id="newClientDuration" value="12" class="form-input" style="margin-bottom:10px">
+            <button class="btn btn-primary" onclick="createClient()">Создать</button>
+        </div>
+    </div>
+
+    <div id="editMetricModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="editMetricTitle">Редактировать</h3>
+                <button class="close-modal" onclick="closeModal('editMetricModal')">×</button>
+            </div>
+            <div id="editMetricForm"></div>
+        </div>
+    </div>
+
     <script>
+        // ========== МОДЕЛЬ ДАННЫХ ==========
         let clients = [], currentClientId = null, metricsData = {}, checklists = {};
+
+        // ИСПРАВЛЕНО: Физика → Фитнес, Психо → Психолог
         const metricsTemplate = {
-            strength:{name:"Сила",category:"Физика",specialist:"Тренер",entry:3,mid:5,final:6},
-            endurance:{name:"Выносливость",category:"Физика",specialist:"Тренер",entry:2,mid:4,final:6},
-            flexibility:{name:"Гибкость",category:"Физика",specialist:"Тренер",entry:4,mid:5,final:5},
-            posture:{name:"Осанка",category:"Физика",specialist:"Невролог",entry:2,mid:4,final:6},
-            pain:{name:"Боль",category:"Физика",specialist:"Невролог",entry:2,mid:5,final:7},
-            heartRate:{name:"ЧСС",category:"Кардио",specialist:"Кардиолог",entry:3,mid:5,final:6},
-            bodyfat:{name:"% жира",category:"Состав",specialist:"Диетолог",entry:2,mid:4,final:6},
-            sleep:{name:"Сон",category:"Психо",specialist:"Психолог",entry:2,mid:4,final:6},
-            stress:{name:"Стресс",category:"Психо",specialist:"Психолог",entry:3,mid:5,final:6}
+            strength: { name: "Сила", category: "Фитнес", specialist: "Тренер", entry: 3, mid: 5, final: 6 },
+            endurance: { name: "Выносливость", category: "Фитнес", specialist: "Тренер", entry: 2, mid: 4, final: 6 },
+            flexibility: { name: "Гибкость", category: "Фитнес", specialist: "Тренер", entry: 4, mid: 5, final: 5 },
+            balance: { name: "Баланс", category: "Фитнес", specialist: "Тренер", entry: 3, mid: 5, final: 6 },
+            posture: { name: "Осанка", category: "Фитнес", specialist: "Невролог", entry: 2, mid: 4, final: 6 },
+            pain: { name: "Боль", category: "Фитнес", specialist: "Невролог", entry: 2, mid: 5, final: 7 },
+            heartRate: { name: "ЧСС", category: "Кардио", specialist: "Кардиолог", entry: 3, mid: 5, final: 6 },
+            bloodPressure: { name: "Давление", category: "Кардио", specialist: "Кардиолог", entry: 4, mid: 5, final: 6 },
+            bodyfat: { name: "% жира", category: "Состав", specialist: "Диетолог", entry: 2, mid: 4, final: 6 },
+            muscle: { name: "Мышечная масса", category: "Состав", specialist: "Диетолог", entry: 3, mid: 5, final: 7 },
+            sleep: { name: "Сон", category: "Психолог", specialist: "Психолог", entry: 2, mid: 4, final: 6 },
+            stress: { name: "Стресс", category: "Психолог", specialist: "Психолог", entry: 3, mid: 5, final: 6 },
+            anxiety: { name: "Тревожность", category: "Психолог", specialist: "Психолог", entry: 4, mid: 5, final: 6 },
+            muscleTone: { name: "Тонус мышц", category: "Восст.", specialist: "Массажист", entry: 3, mid: 5, final: 6 },
+            doms: { name: "DOMS", category: "Восст.", specialist: "Тренер", entry: 4, mid: 5, final: 7 }
         };
-        function saveClients(){localStorage.setItem('fhrm_clients',JSON.stringify(clients));}
-        function saveMetrics(){localStorage.setItem('fhrm_metrics',JSON.stringify(metricsData));}
-        function saveChecklists(){localStorage.setItem('fhrm_checklists',JSON.stringify(checklists));}
-        function loadData(){
-            let saved=localStorage.getItem('fhrm_clients');
-            if(saved) clients=JSON.parse(saved);
-            else{clients=[{id:1,name:"Иван Иванов",duration:12,currentWeek:6}];saveClients();}
-            saved=localStorage.getItem('fhrm_metrics');
-            if(saved) metricsData=JSON.parse(saved);
-            saved=localStorage.getItem('fhrm_checklists');
-            if(saved) checklists=JSON.parse(saved);
-            if(clients.length&&!currentClientId) currentClientId=clients[0].id;
-            if(!metricsData[currentClientId]) metricsData[currentClientId]=JSON.parse(JSON.stringify(metricsTemplate));
-            if(!checklists[currentClientId]) checklists[currentClientId]=[];
+
+        // ========== LOCALSTORAGE ==========
+        function saveClients() { localStorage.setItem('fhrm_clients', JSON.stringify(clients)); }
+        function saveMetrics() { localStorage.setItem('fhrm_metrics', JSON.stringify(metricsData)); }
+        function saveChecklists() { localStorage.setItem('fhrm_checklists', JSON.stringify(checklists)); }
+
+        function loadData() {
+            let saved = localStorage.getItem('fhrm_clients');
+            if (saved) clients = JSON.parse(saved);
+            else { clients = [{ id: 1, name: "Иван Иванов", duration: 12, currentWeek: 6 }]; saveClients(); }
+            saved = localStorage.getItem('fhrm_metrics');
+            if (saved) metricsData = JSON.parse(saved);
+            saved = localStorage.getItem('fhrm_checklists');
+            if (saved) checklists = JSON.parse(saved);
+            if (clients.length && !currentClientId) currentClientId = clients[0].id;
+            if (!metricsData[currentClientId]) metricsData[currentClientId] = JSON.parse(JSON.stringify(metricsTemplate));
+            if (!checklists[currentClientId]) checklists[currentClientId] = [];
         }
-        function getMetrics(){return metricsData[currentClientId];}
-        function calculateGPI(){
-            let m=getMetrics(),e=0,mid=0,f=0,c=0;
-            for(let k in m){e+=m[k].entry;mid+=m[k].mid;f+=m[k].final;c++;}
-            let eg=e/c,mg=mid/c,fg=f/c,ch=eg>0?((fg-eg)/eg*100).toFixed(0):0;
-            document.getElementById('gpiValue').innerText=fg.toFixed(1);
-            document.getElementById('gpiChange').innerHTML=(ch>=0?'▲':'▼')+' '+Math.abs(ch)+'%';
-            document.getElementById('gpiProgress').style.width=(fg/7)*100+'%';
-            document.getElementById('entryGPI').innerHTML='🔴 Вход: '+eg.toFixed(1);
-            document.getElementById('midGPI').innerHTML='🟡 Середина: '+mg.toFixed(1);
-            document.getElementById('finalGPI').innerHTML='🟢 Выход: '+fg.toFixed(1);
+
+        function getMetrics() { return metricsData[currentClientId]; }
+
+        function calculateGPI() {
+            let m = getMetrics(), e = 0, mid = 0, f = 0, c = 0;
+            for (let k in m) { e += m[k].entry; mid += m[k].mid; f += m[k].final; c++; }
+            let eg = e / c, mg = mid / c, fg = f / c, ch = eg > 0 ? ((fg - eg) / eg * 100).toFixed(0) : 0;
+            document.getElementById('gpiValue').innerText = fg.toFixed(1);
+            document.getElementById('gpiChange').innerHTML = (ch >= 0 ? '▲' : '▼') + ' ' + Math.abs(ch) + '%';
+            document.getElementById('gpiProgress').style.width = (fg / 7) * 100 + '%';
+            document.getElementById('entryGPI').innerHTML = '🔴 Вход: ' + eg.toFixed(1);
+            document.getElementById('midGPI').innerHTML = '🟡 Середина: ' + mg.toFixed(1);
+            document.getElementById('finalGPI').innerHTML = '🟢 Выход: ' + fg.toFixed(1);
         }
-        function renderRadarChart(){
-            let canvas=document.getElementById('radarChart'),ctx=canvas.getContext('2d'),m=getMetrics();
-            let keys=['strength','endurance','flexibility','posture','pain','sleep','stress','bodyfat'];
-            let entry=keys.map(k=>m[k]?.entry||3),final=keys.map(k=>m[k]?.final||3),names=['Сила','Выносливость','Гибкость','Осанка','Боль','Сон','Стресс','% жира'];
-            let w=canvas.width=400,h=canvas.height=400,cx=w/2,cy=h/2,r=Math.min(w,h)*0.35,step=Math.PI*2/keys.length;
-            ctx.clearRect(0,0,w,h);ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--border');ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--text-secondary');
-            for(let i=0;i<keys.length;i++){let a=i*step-Math.PI/2,x=cx+Math.cos(a)*(r+25),y=cy+Math.sin(a)*(r+25);ctx.fillText(names[i],x,y);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.stroke();}
-            for(let i=1;i<=3;i++){ctx.beginPath();for(let j=0;j<=keys.length;j++){let a=j*step-Math.PI/2,x=cx+Math.cos(a)*(r/3*i),y=cy+Math.sin(a)*(r/3*i);j===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.stroke();}
-            function draw(v,c,fc){ctx.beginPath();for(let i=0;i<keys.length;i++){let a=i*step-Math.PI/2,val=Math.min(1,Math.max(0,v[i]/7)),x=cx+Math.cos(a)*r*val,y=cy+Math.sin(a)*r*val;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.fillStyle=fc;ctx.fill();ctx.strokeStyle=c;ctx.stroke();}
-            draw(entry,'#ef4444','rgba(239,68,68,0.2)');draw(final,'#10b981','rgba(16,185,129,0.2)');
+
+        function renderRadarChart() {
+            let canvas = document.getElementById('radarChart'), ctx = canvas.getContext('2d'), m = getMetrics();
+            let keys = ['strength', 'endurance', 'flexibility', 'posture', 'pain', 'sleep', 'stress', 'bodyfat'];
+            let entry = keys.map(k => m[k]?.entry || 3), final = keys.map(k => m[k]?.final || 3);
+            let names = ['Сила', 'Выносливость', 'Гибкость', 'Осанка', 'Боль', 'Сон', 'Стресс', '% жира'];
+            let w = canvas.width = 400, h = canvas.height = 400, cx = w / 2, cy = h / 2, r = Math.min(w, h) * 0.35, step = Math.PI * 2 / keys.length;
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--border');
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
+            for (let i = 0; i < keys.length; i++) {
+                let a = i * step - Math.PI / 2, x = cx + Math.cos(a) * (r + 25), y = cy + Math.sin(a) * (r + 25);
+                ctx.fillText(names[i], x, y);
+                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); ctx.stroke();
+            }
+            for (let i = 1; i <= 3; i++) {
+                ctx.beginPath();
+                for (let j = 0; j <= keys.length; j++) {
+                    let a = j * step - Math.PI / 2, x = cx + Math.cos(a) * (r / 3 * i), y = cy + Math.sin(a) * (r / 3 * i);
+                    j === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.closePath(); ctx.stroke();
+            }
+            function draw(v, c, fc) {
+                ctx.beginPath();
+                for (let i = 0; i < keys.length; i++) {
+                    let a = i * step - Math.PI / 2, val = Math.min(1, Math.max(0, v[i] / 7)), x = cx + Math.cos(a) * r * val, y = cy + Math.sin(a) * r * val;
+                    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.closePath(); ctx.fillStyle = fc; ctx.fill(); ctx.strokeStyle = c; ctx.stroke();
+            }
+            draw(entry, '#ef4444', 'rgba(239,68,68,0.2)');
+            draw(final, '#10b981', 'rgba(16,185,129,0.2)');
         }
-        function renderMetricsList(){
-            let cont=document.getElementById('metricsList'),m=getMetrics();cont.innerHTML='';
-            for(let k in m){let d=m[k],gain=d.final-d.entry,card=document.createElement('div');card.className='metric-card';card.onclick=()=>showEditModal(k);
-            card.innerHTML=`<div class="metric-header"><span class="metric-title">${d.name}</span><span class="metric-category">${d.category}</span></div><div class="metric-scores"><div><div class="score-label">Вход</div><div class="score-value score-entry">${d.entry}</div></div><div><div class="score-label">Середина</div><div class="score-value score-mid">${d.mid}</div></div><div><div class="score-label">Выход</div><div class="score-value score-final">${d.final}</div></div><div class="progress-indicator"><div class="progress-fill" style="width:${(d.final/7)*100}%"></div></div></div><div style="margin-top:8px;font-size:12px;">Куратор: ${d.specialist} | +${gain}</div>`;cont.appendChild(card);}
+
+        function renderMetricsList() {
+            let cont = document.getElementById('metricsList'), m = getMetrics();
+            cont.innerHTML = '';
+            for (let k in m) {
+                let d = m[k], gain = d.final - d.entry, card = document.createElement('div');
+                card.className = 'metric-card';
+                card.onclick = () => showEditModal(k);
+                card.innerHTML = `<div class="metric-header"><span class="metric-title">${d.name}</span><span class="metric-category">${d.category}</span></div>
+                <div class="metric-scores"><div><div class="score-label">Вход</div><div class="score-value score-entry">${d.entry}</div></div>
+                <div><div class="score-label">Середина</div><div class="score-value score-mid">${d.mid}</div></div>
+                <div><div class="score-label">Выход</div><div class="score-value score-final">${d.final}</div></div>
+                <div class="progress-indicator"><div class="progress-fill" style="width:${(d.final / 7) * 100}%"></div></div></div>
+                <div style="margin-top:8px;font-size:12px;">Куратор: ${d.specialist} | +${gain}</div>`;
+                cont.appendChild(card);
+            }
         }
-        function renderTopAchievements(){
-            let m=getMetrics(),arr=[];for(let k in m){let d=m[k],gain=d.final-d.entry;arr.push({name:d.name,entry:d.entry,final:d.final,gain});}
-            arr.sort((a,b)=>b.gain-a.gain);document.getElementById('topAchievements').innerHTML=arr.slice(0,5).map(a=>`<div class="metric-card"><div>${a.name}</div><div>${a.entry} → ${a.final} <span style="color:#10b981;">+${a.gain}</span></div></div>`).join('');
+
+        function renderTopAchievements() {
+            let m = getMetrics(), arr = [];
+            for (let k in m) { let d = m[k], gain = d.final - d.entry; arr.push({ name: d.name, entry: d.entry, final: d.final, gain }); }
+            arr.sort((a, b) => b.gain - a.gain);
+            document.getElementById('topAchievements').innerHTML = arr.slice(0, 5).map(a => `<div class="metric-card"><div>${a.name}</div><div>${a.entry} → ${a.final} <span style="color:#10b981;">+${a.gain}</span></div></div>`).join('');
         }
-        function renderGrowthZones(){
-            let m=getMetrics(),zones=[];for(let k in m){if(m[k].final<6)zones.push(m[k]);}
-            document.getElementById('growthZones').innerHTML=zones.length?zones.map(z=>`<div class="growth-zone-card"><div class="metric-title">${z.name}</div><div>${z.final}/7 → цель 7</div></div>`).join(''):'<div class="success-card"><p>✅ Все показатели в норме!</p></div>';
+
+        function renderGrowthZones() {
+            let m = getMetrics(), zones = [];
+            for (let k in m) { if (m[k].final < 6) zones.push(m[k]); }
+            document.getElementById('growthZones').innerHTML = zones.length ? zones.map(z => `<div class="growth-zone-card"><div class="metric-title">${z.name}</div><div>${z.final}/7 → цель 7</div></div>`).join('') : '<div class="success-card"><p>✅ Все показатели в норме!</p></div>';
         }
-        function renderSpecialists(){
-            let specs={Тренер:{icon:'🏋️',total:0,count:0},Невролог:{icon:'🧠',total:0,count:0},Диетолог:{icon:'🍎',total:0,count:0},Кардиолог:{icon:'❤️',total:0,count:0},Психолог:{icon:'🧘',total:0,count:0},Массажист:{icon:'💆',total:0,count:0}};
-            let m=getMetrics();for(let k in m){let s=m[k].specialist,gain=m[k].final-m[k].entry;if(specs[s]){specs[s].total+=gain;specs[s].count++;}}
-            let cont=document.getElementById('specialistsGrid');cont.innerHTML='';
-            for(let n in specs){let s=specs[n],avg=s.count?(s.total/s.count).toFixed(1):0,stars=avg>=3?'⭐⭐⭐':avg>=2?'⭐⭐':'⭐';
-            cont.innerHTML+=`<div class="specialist-card"><div class="specialist-icon">${s.icon}</div><div class="specialist-name">${n}</div><div class="specialist-kpi">+${avg}</div><div class="specialist-stars">${stars}</div><div style="font-size:11px;">${s.count} показ.</div></div>`;}
-            document.getElementById('recommendations').innerHTML='<p>✓ Увеличить гибкость</p><p>✓ Контроль питания</p><p>✓ Массаж 2 раза/нед</p>';
+
+        function renderSpecialists() {
+            let specs = { Тренер: { icon: '🏋️', total: 0, count: 0 }, Невролог: { icon: '🧠', total: 0, count: 0 }, Диетолог: { icon: '🍎', total: 0, count: 0 }, Кардиолог: { icon: '❤️', total: 0, count: 0 }, Психолог: { icon: '🧘', total: 0, count: 0 }, Массажист: { icon: '💆', total: 0, count: 0 } };
+            let m = getMetrics();
+            for (let k in m) { let s = m[k].specialist, gain = m[k].final - m[k].entry; if (specs[s]) { specs[s].total += gain; specs[s].count++; } }
+            let cont = document.getElementById('specialistsGrid');
+            cont.innerHTML = '';
+            for (let n in specs) {
+                let s = specs[n], avg = s.count ? (s.total / s.count).toFixed(1) : 0, stars = avg >= 3 ? '⭐⭐⭐' : avg >= 2 ? '⭐⭐' : '⭐';
+                cont.innerHTML += `<div class="specialist-card"><div class="specialist-icon">${s.icon}</div><div class="specialist-name">${n}</div><div class="specialist-kpi">+${avg}</div><div class="specialist-stars">${stars}</div><div style="font-size:11px;">${s.count} показ.</div></div>`;
+            }
+            document.getElementById('recommendations').innerHTML = '<p>✓ Увеличить гибкость</p><p>✓ Контроль питания</p><p>✓ Массаж 2 раза/нед</p>';
         }
-        function populateMetricSelect(){let s=document.getElementById('metricSelect'),m=getMetrics();s.innerHTML='';for(let k in m)s.innerHTML+=`<option value="${k}">${m[k].name} (${m[k].category})</option>`;}
-        function updateUI(){
-            let c=clients.find(c=>c.id===currentClientId);if(c){document.getElementById('clientName').innerText=c.name;document.getElementById('clientDetails').innerHTML=`Курс: ${c.duration} нед`;document.getElementById('weekBadge').innerHTML=`Неделя ${c.currentWeek||1}/${c.duration}`;}
-            calculateGPI();renderMetricsList();renderTopAchievements();renderGrowthZones();renderSpecialists();renderRadarChart();populateMetricSelect();renderChecklists();loadPhotos();
+
+        function populateMetricSelect() {
+            let s = document.getElementById('metricSelect'), m = getMetrics();
+            s.innerHTML = '';
+            for (let k in m) s.innerHTML += `<option value="${k}">${m[k].name} (${m[k].category})</option>`;
         }
-        function saveData(){
-            let mid=document.getElementById('metricSelect').value,type=document.getElementById('assessmentType').value,score=parseInt(document.getElementById('scoreSlider').value),m=getMetrics();
-            if(m[mid]){m[mid][type]=score;saveMetrics();updateUI();showToast(`✅ ${m[mid].name}: ${score}/7`);}
+
+        function updateUI() {
+            let c = clients.find(c => c.id === currentClientId);
+            if (c) {
+                document.getElementById('clientName').innerText = c.name;
+                document.getElementById('clientDetails').innerHTML = `Курс: ${c.duration} нед`;
+                document.getElementById('weekBadge').innerHTML = `Неделя ${c.currentWeek || 1}/${c.duration}`;
+            }
+            calculateGPI(); renderMetricsList(); renderTopAchievements(); renderGrowthZones();
+            renderSpecialists(); renderRadarChart(); populateMetricSelect(); renderChecklists(); loadPhotos();
         }
-        function showEditModal(k){let m=getMetrics()[k];document.getElementById('editMetricTitle').innerHTML=`Редактировать: ${m.name}`;
-        document.getElementById('editMetricForm').innerHTML=`<div class="form-group"><label>Вход</label><input type="range" id="editEntry" min="1" max="7" value="${m.entry}"><span id="editEntryVal">${m.entry}</span></div><div class="form-group"><label>Середина</label><input type="range" id="editMid" min="1" max="7" value="${m.mid}"><span id="editMidVal">${m.mid}</span></div><div class="form-group"><label>Выход</label><input type="range" id="editFinal" min="1" max="7" value="${m.final}"><span id="editFinalVal">${m.final}</span></div><button class="btn btn-primary" onclick="saveEditMetric('${k}')">Сохранить</button>`;
-        document.getElementById('editEntry').oninput=()=>document.getElementById('editEntryVal').innerText=document.getElementById('editEntry').value;
-        document.getElementById('editMid').oninput=()=>document.getElementById('editMidVal').innerText=document.getElementById('editMid').value;
-        document.getElementById('editFinal').oninput=()=>document.getElementById('editFinalVal').innerText=document.getElementById('editFinal').value;
-        document.getElementById('editMetricModal').classList.add('active');}
-        function saveEditMetric(k){let m=getMetrics();m[k].entry=parseInt(document.getElementById('editEntry').value);m[k].mid=parseInt(document.getElementById('editMid').value);m[k].final=parseInt(document.getElementById('editFinal').value);saveMetrics();updateUI();closeModal('editMetricModal');showToast('✅ Сохранено');}
-        function showClientModal(){let cont=document.getElementById('clientListContainer');cont.innerHTML=clients.map(c=>`<div class="client-item" onclick="selectClient(${c.id})"><div><strong>${c.name}</strong><br><small>${c.duration} нед</small></div><button class="icon-btn" onclick="event.stopPropagation();deleteClient(${c.id})">🗑️</button></div>`).join('');document.getElementById('clientModal').classList.add('active');}
-        function selectClient(id){currentClientId=id;updateUI();closeModal('clientModal');showToast(`👤 ${clients.find(c=>c.id===id).name}`);}
-        function showNewClientModal(){document.getElementById('newClientModal').classList.add('active');}
-        function createClient(){let name=document.getElementById('newClientName').value.trim(),dur=parseInt(document.getElementById('newClientDuration').value);if(!name){showToast('Введите имя');return;}let id=Date.now();clients.push({id,name,duration:dur,currentWeek:1});metricsData[id]=JSON.parse(JSON.stringify(metricsTemplate));checklists[id]=[];saveClients();saveMetrics();saveChecklists();currentClientId=id;updateUI();closeModal('newClientModal');showToast(`✅ ${name} создан`);}
-        function deleteClient(id){if(confirm('Удалить?')){clients=clients.filter(c=>c.id!==id);delete metricsData[id];delete checklists[id];if(currentClientId===id&&clients.length)currentClientId=clients[0].id;saveClients();saveMetrics();saveChecklists();updateUI();showToast('Клиент удален');}}
-        function uploadPhoto(type,input){let f=input.files[0];if(f){let r=new FileReader();r.onload=e=>{let cont=document.getElementById(`photo${type==='before'?'Before':'After'}Container`);cont.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;localStorage.setItem(`fhrm_photo_${currentClientId}_${type}`,e.target.result);showToast(`📸 Фото сохранено`);};r.readAsDataURL(f);}}
-        function loadPhotos(){['before','after'].forEach(t=>{let s=localStorage.getItem(`fhrm_photo_${currentClientId}_${t}`),cont=document.getElementById(`photo${t==='before'?'Before':'After'}Container`);if(s&&cont)cont.innerHTML=`<img src="${s}" style="width:100%;height:100%;object-fit:cover;">`;else if(cont)cont.innerHTML='📷';});}
-        function renderChecklists(){let cont=document.getElementById('checklistContainer'),items=checklists[currentClientId]||[];if(!items.length){cont.innerHTML='<p style="text-align:center;">Нет пунктов</p>';return;}cont.innerHTML=items.map((i,idx)=>`<div class="checklist-item"><input type="checkbox" ${i.done?'checked':''} onchange="toggleChecklist(${idx})"><span style="flex:1;${i.done?'text-decoration:line-through;opacity:0.6':''}">${i.text}</span><button class="icon-btn" onclick="deleteChecklist(${idx})">🗑️</button></div>`).join('');}
-        function addChecklistItem(){let t=prompt('Пункт чек-листа:');if(t){if(!checklists[currentClientId])checklists[currentClientId]=[];checklists[currentClientId].push({text:t,done:false});saveChecklists();renderChecklists();showToast('✅ Добавлено');}}
-        function toggleChecklist(idx){checklists[currentClientId][idx].done=!checklists[currentClientId][idx].done;saveChecklists();renderChecklists();}
-        function deleteChecklist(idx){checklists[currentClientId].splice(idx,1);saveChecklists();renderChecklists();}
-        async function generatePDF(){let c=clients.find(c=>c.id===currentClientId),m=getMetrics(),gpi=calculateGPI();let el=document.createElement('div');el.style.padding='20px';el.style.fontFamily='sans-serif';el.innerHTML=`<h1 style="color:#667eea">FHRM Отчет</h1><h2>${c.name}</h2><p>${new Date().toLocaleDateString()}</p><hr><h3>GPI: ${gpi.finalGPI.toFixed(1)}/7</h3><table border="1" cellpadding="8"><tr><th>Показатель</th><th>Вход</th><th>Выход</th><th>Прирост</th></tr>${Object.values(m).map(v=>`<tr><td>${v.name}</td><td>${v.entry}</td><td>${v.final}</td><td>${v.final-v.entry>0?'+':''}${v.final-v.entry}</td></tr>`).join('')}</table>`;document.body.appendChild(el);html2pdf().from(el).set({filename:`FHRM_${c.name}.pdf`}).save();document.body.removeChild(el);showToast('📄 PDF готов');}
-        function toggleTheme(){document.body.classList.toggle('dark');localStorage.setItem('fhrm_theme',document.body.classList.contains('dark')?'dark':'light');renderRadarChart();}
-        function closeModal(id){document.getElementById(id).classList.remove('active');}
-        function showToast(m){let t=document.createElement('div');t.className='toast';t.innerText=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
-        function initTabs(){document.querySelectorAll('.tab, .nav-item').forEach(t=>t.addEventListener('click',()=>{let p=t.dataset.panel||t.dataset.nav;document.querySelectorAll('.panel').forEach(panel=>panel.classList.remove('active'));document.getElementById(p).classList.add('active');document.querySelectorAll('.tab, .nav-item').forEach(btn=>btn.classList.remove('active'));t.classList.add('active');}));}
-        loadData();initTabs();updateUI();document.getElementById('saveDataBtn').onclick=saveData;document.getElementById('resetDataBtn').onclick=()=>{if(confirm('Сбросить?')){metricsData[currentClientId]=JSON.parse(JSON.stringify(metricsTemplate));saveMetrics();updateUI();showToast('🔄 Сброшено');}};document.getElementById('scoreSlider').oninput=()=>document.getElementById('scoreValue').innerText=document.getElementById('scoreSlider').value;document.getElementById('photoBefore').onchange=e=>uploadPhoto('before',e.target);document.getElementById('photoAfter').onchange=e=>uploadPhoto('after',e.target);
-        let theme=localStorage.getItem('fhrm_theme');if(theme==='dark')document.body.classList.add('dark');
-        if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
-        setTimeout(()=>showToast('📱 Нажмите "Поделиться" → "На экран Домой"'),3000);
+
+        function saveData() {
+            let mid = document.getElementById('metricSelect').value, type = document.getElementById('assessmentType').value, score = parseInt(document.getElementById('scoreSlider').value), m = getMetrics();
+            if (m[mid]) { m[mid][type] = score; saveMetrics(); updateUI(); showToast(`✅ ${m[mid].name}: ${score}/7`); }
+        }
+
+        function showEditModal(k) {
+            let m = getMetrics()[k];
+            document.getElementById('editMetricTitle').innerHTML = `Редактировать: ${m.name}`;
+            document.getElementById('editMetricForm').innerHTML = `<div class="form-group"><label>Вход</label><input type="range" id="editEntry" min="1" max="7" value="${m.entry}"><span id="editEntryVal">${m.entry}</span></div>
+            <div class="form-group"><label>Середина</label><input type="range" id="editMid" min="1" max="7" value="${m.mid}"><span id="editMidVal">${m.mid}</span></div>
+            <div class="form-group"><label>Выход</label><input type="range" id="editFinal" min="1" max="7" value="${m.final}"><span id="editFinalVal">${m.final}</span></div>
+            <button class="btn btn-primary" onclick="saveEditMetric('${k}')">Сохранить</button>`;
+            document.getElementById('editEntry').oninput = () => document.getElementById('editEntryVal').innerText = document.getElementById('editEntry').value;
+            document.getElementById('editMid').oninput = () => document.getElementById('editMidVal').innerText = document.getElementById('editMid').value;
+            document.getElementById('editFinal').oninput = () => document.getElementById('editFinalVal').innerText = document.getElementById('editFinal').value;
+            document.getElementById('editMetricModal').classList.add('active');
+        }
+
+        function saveEditMetric(k) {
+            let m = getMetrics();
+            m[k].entry = parseInt(document.getElementById('editEntry').value);
+            m[k].mid = parseInt(document.getElementById('editMid').value);
+            m[k].final = parseInt(document.getElementById('editFinal').value);
+            saveMetrics(); updateUI(); closeModal('editMetricModal'); showToast('✅ Сохранено');
+        }
+
+        function showClientModal() {
+            let cont = document.getElementById('clientListContainer');
+            cont.innerHTML = clients.map(c => `<div class="client-item" onclick="selectClient(${c.id})"><div><strong>${c.name}</strong><br><small>${c.duration} нед</small></div><button class="icon-btn" onclick="event.stopPropagation();deleteClient(${c.id})">🗑️</button></div>`).join('');
+            document.getElementById('clientModal').classList.add('active');
+        }
+
+        function selectClient(id) { currentClientId = id; updateUI(); closeModal('clientModal'); showToast(`👤 ${clients.find(c => c.id === id).name}`); }
+        function showNewClientModal() { document.getElementById('newClientModal').classList.add('active'); }
+
+        function createClient() {
+            let name = document.getElementById('newClientName').value.trim(), dur = parseInt(document.getElementById('newClientDuration').value);
+            if (!name) { showToast('Введите имя'); return; }
+            let id = Date.now();
+            clients.push({ id, name, duration: dur, currentWeek: 1 });
+            metricsData[id] = JSON.parse(JSON.stringify(metricsTemplate));
+            checklists[id] = [];
+            saveClients(); saveMetrics(); saveChecklists();
+            currentClientId = id; updateUI();
+            closeModal('newClientModal');
+            showToast(`✅ ${name} создан`);
+        }
+
+        function deleteClient(id) {
+            if (confirm('Удалить?')) {
+                clients = clients.filter(c => c.id !== id);
+                delete metricsData[id]; delete checklists[id];
+                if (currentClientId === id && clients.length) currentClientId = clients[0].id;
+                saveClients(); saveMetrics(); saveChecklists(); updateUI();
+                showToast('Клиент удален');
+            }
+        }
+
+        function uploadPhoto(type, input) {
+            let f = input.files[0];
+            if (f) {
+                let r = new FileReader();
+                r.onload = e => {
+                    let cont = document.getElementById(`photo${type === 'before' ? 'Before' : 'After'}Container`);
+                    cont.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+                    localStorage.setItem(`fhrm_photo_${currentClientId}_${type}`, e.target.result);
+                    showToast(`📸 Фото сохранено`);
+                };
+                r.readAsDataURL(f);
+            }
+        }
+
+        function loadPhotos() {
+            ['before', 'after'].forEach(t => {
+                let s = localStorage.getItem(`fhrm_photo_${currentClientId}_${t}`), cont = document.getElementById(`photo${t === 'before' ? 'Before' : 'After'}Container`);
+                if (s && cont) cont.innerHTML = `<img src="${s}" style="width:100%;height:100%;object-fit:cover;">`;
+                else if (cont) cont.innerHTML = '📷';
+            });
+        }
+
+        function renderChecklists() {
+            let cont = document.getElementById('checklistContainer'), items = checklists[currentClientId] || [];
+            if (!items.length) { cont.innerHTML = '<p style="text-align:center;">Нет пунктов</p>'; return; }
+            cont.innerHTML = items.map((i, idx) => `<div class="checklist-item"><input type="checkbox" ${i.done ? 'checked' : ''} onchange="toggleChecklist(${idx})"><span style="flex:1;${i.done ? 'text-decoration:line-through;opacity:0.6' : ''}">${i.text}</span><button class="icon-btn" onclick="deleteChecklist(${idx})">🗑️</button></div>`).join('');
+        }
+
+        function addChecklistItem() {
+            let t = prompt('Пункт чек-листа:');
+            if (t) {
+                if (!checklists[currentClientId]) checklists[currentClientId] = [];
+                checklists[currentClientId].push({ text: t, done: false });
+                saveChecklists(); renderChecklists(); showToast('✅ Добавлено');
+            }
+        }
+
+        function toggleChecklist(idx) { checklists[currentClientId][idx].done = !checklists[currentClientId][idx].done; saveChecklists(); renderChecklists(); }
+        function deleteChecklist(idx) { checklists[currentClientId].splice(idx, 1); saveChecklists(); renderChecklists(); }
+
+        async function generatePDF() {
+            let c = clients.find(c => c.id === currentClientId), m = getMetrics(), gpi = calculateGPI();
+            let el = document.createElement('div');
+            el.style.padding = '20px'; el.style.fontFamily = 'sans-serif';
+            el.innerHTML = `<h1 style="color:#667eea">FHRM Отчет</h1><h2>${c.name}</h2><p>${new Date().toLocaleDateString()}</p><hr><h3>GPI: ${gpi.finalGPI.toFixed(1)}/7</h3><table border="1" cellpadding="8"><tr><th>Показатель</th><th>Вход</th><th>Выход</th><th>Прирост</th></tr>${Object.values(m).map(v => `<tr><td>${v.name}</td><td>${v.entry}</td><td>${v.final}</td><td>${v.final - v.entry > 0 ? '+' : ''}${v.final - v.entry}</td></tr>`).join('')}</table>`;
+            document.body.appendChild(el);
+            html2pdf().from(el).set({ filename: `FHRM_${c.name}.pdf` }).save();
+            document.body.removeChild(el);
+            showToast('📄 PDF готов');
+        }
+
+        function toggleTheme() { document.body.classList.toggle('dark'); localStorage.setItem('fhrm_theme', document.body.classList.contains('dark') ? 'dark' : 'light'); renderRadarChart(); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function showToast(m) { let t = document.createElement('div'); t.className = 'toast'; t.innerText = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
+
+        function initTabs() {
+            document.querySelectorAll('.tab, .nav-item').forEach(t => t.addEventListener('click', () => {
+                let p = t.dataset.panel || t.dataset.nav;
+                document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+                document.getElementById(p).classList.add('active');
+                document.querySelectorAll('.tab, .nav-item').forEach(btn => btn.classList.remove('active'));
+                t.classList.add('active');
+            }));
+        }
+
+        loadData(); initTabs(); updateUI();
+        document.getElementById('saveDataBtn').onclick = saveData;
+        document.getElementById('resetDataBtn').onclick = () => { if (confirm('Сбросить?')) { metricsData[currentClientId] = JSON.parse(JSON.stringify(metricsTemplate)); saveMetrics(); updateUI(); showToast('🔄 Сброшено'); } };
+        document.getElementById('scoreSlider').oninput = () => document.getElementById('scoreValue').innerText = document.getElementById('scoreSlider').value;
+        document.getElementById('photoBefore').onchange = e => uploadPhoto('before', e.target);
+        document.getElementById('photoAfter').onchange = e => uploadPhoto('after', e.target);
+
+        let theme = localStorage.getItem('fhrm_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+
+        setTimeout(() => showToast('📱 Нажмите "Поделиться" → "На экран Домой"'), 3000);
     </script>
 </body>
 </html>
